@@ -1,0 +1,228 @@
+<html>
+    <!------------------------------------------------------------------------------------------------------------------->
+    <head>
+        <title>Elearning</title>
+        
+        <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <script src="lessons.js"></script>
+
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    </head>
+    <!------------------------------------------------------------------------------------------------------------------->
+    <body>
+        <div id="app">
+    <!------------------------------------------------------------------------------------------------------------------->
+            <header>
+                <div class="jumbotron text-center">
+                    <h1> {{ sitename }}</h1>
+                  <p>a quote which i will write in this area</p> 
+                </div>
+            </header>
+
+
+    <!------------------------------------------------------------------------------------------------------------------->
+            <main> 
+    <!------------------------------------------------------------------------------------------------------------------->
+    <div class="container">
+
+        <div class="row">
+    
+            <div class="col-sm-5">
+                <h5>Sorting</h5>
+            </div>
+    
+            <div class="col-sm-5">
+            
+            </div>
+    
+            <div class="col-sm-2">
+                <button @click='showCheckout'> 
+                    {{cartItemCount}}
+                <span class ="fa fa-cart-plus"></span> Checkout </button>
+            </div>
+        </div>
+    
+        <div class="row">
+            <div class="col-sm-4">
+                <p>
+                    <button @click='sortprice'> 
+                        sortprice
+                    </button>
+                </p>
+            </div>
+            <div class="col-sm-8">
+                <div v-if='showLesson'>
+                    <div class="content">   <h5>Choose your lessons </h5>
+                            <!--Using the for loop we are looping through the return of the sortedProducts computed property-->
+                            <!--This will give us a list sorted by Price-->
+                            <div v-for="lesson in lessons">
+                                <div class="container">
+                                    <div class="card" style="width:400px">
+                                        <h2 v-text ="lesson.title" class="card-title"></h2>
+                                            <figure>
+                                                <img v-bind:src="lesson.image" width="200" height="200">
+                                            </figure>
+                                            <p v-html ="lesson.description"></p>
+                                            <p> Price {{ lesson.price }} </p>
+                    
+                                            <!-- The button will display when 'Add to Cart is True -->                        
+                                            <!--When we click the Add To Cart are now passing the product and its ID to the function as parameters-->
+                                             <button @click='addToCart(lesson)' v-if='canAddToCart(lesson)'> Add to Cart </button>
+                    
+                                                <!-- v-if to check how many products with the particular id are in the shopping 
+                                                    cart against what are available in the inventory of that particular product-->
+                                                    <span v-if="lesson.availableInventory === cartCount(lesson.id)">
+                                                        Sold out!
+                                                    </span>
+                                                    <span v-else-if="lesson.availableInventory - cartCount(lesson.id) < 5">
+                                                        Only {{lesson.availableInventory - cartCount(lesson.id)}} left!!
+                                                    </span>
+                                                    <span v-else>Buy Now!</span>
+                                                <!-- This button will be disabled otherwise -->
+                                            <button disabled ='disabled' v-else>Add to Cart</button>
+                                    </div>
+                                </div>
+                            </div>  
+                        </div>
+                    </div>
+    
+    
+                <div v-else>
+                    <form name="myForm" onsubmit="return submitForm()" method="post" required>
+                    <h2>Checkout</h2>
+                    <p>
+                        <strong>First Name:</strong>
+                        <!-- This input field is bound to 'firstName' in the 'order' object -->
+                        <input type="text" name="fname" v-model.trim="order.firstName" required/>
+                    </p>
+                    <p>
+                        <strong> Phone number:</strong>
+                        <!-- This input field is bound to 'lastName' in the 'order' object -->
+                        <input type="text" name="phone" v-model.trim="order.phonenumber" required/>
+                    </p>
+                    <p>Items in Cart: {{cart}}</p>
+                    
+                      </form>
+
+                
+                    <button type="submit" value="Submit" v-on:click="submitForm">Place Order</button> 
+                </div>
+            </div>
+        </div>
+        
+    </div>
+            </main>
+<!------------------------------------------------------------------------------------------------------------------->
+        </div>
+    </body>
+<!------------------------------------------------------------------------------------------------------------------->
+    <script>
+        var webstore = new Vue({
+            el: '#app',
+            data: {
+                showLesson: true,
+                sitename: 'ELearning',
+                cart: [], // array to store items in shopping cart,
+                
+                order: {
+                    firstName: "",
+                    phonenumber: ""
+                },
+                lessons: lessons,
+            } 
+            ,
+            
+            methods:{
+                
+                addToCart: function (lesson) {
+                    this.cart.push(lesson.title);
+                },
+
+                addToCheckOutCart(product){
+                    this.addToCheckOutCart.push(product);
+                },
+                showCheckout: function(){
+                    this.showLesson = this.showLesson ? false : true;
+                },
+                submitForm(){
+                    var x = document.forms["myForm"]["fname"].value;
+                    var y = document.forms["myForm"]["phone"].value;
+                    if (x == "" || x == null) {
+                        alert("Name must be filled out");
+                    }
+                    else if (y == "" || y == null) {
+                            alert("Phone must be filled out");
+                        }
+                        else{
+                            alert('order has been placed')
+                            
+                        }
+
+                        
+                },
+                //Remove canAddToCart from Computed to Method since computed does not take parameters, 
+                //We are now working with an array of objects and therefore need to pass the product
+                //and its ID to identify which product we are working with
+                  canAddToCart: function(lesson){
+                    return lesson.availableInventory > this.cartCount(lesson.title);
+                },
+                
+                //We introduce the cartCount Method to count the number of items of a particular type in the cart
+                cartCount(id){
+                    let count = 0;
+                    for (let i = 0; i < this.cart.length; i++){
+                        if(this.cart[i] === id){
+                            count++
+                        }
+                    }
+                    return count;
+                }
+            },
+
+            
+            
+            computed: {
+                cartItemCount: function(){
+                    return this.cart.length;
+                },
+                // canAddToCart: function(product){
+                //     return product.availableInventory > this.cartItemCount(product.id);
+                // },
+                display(){
+                    let lessonsArray = this.lessons.slice(0);
+                    function compare (a, b){
+                    }
+                    return lessonsArray;
+                },
+                //We are sorting products by price
+                sortedlessons(){
+                    let lessonsArray = this.lessons.slice(0);
+                    return lessonsArray;
+                },
+                sortprice(){
+                    let lessonsArray = this.lessons.slice(0);
+                    function compare (a, b){
+                        if(a.price < b.price)
+                        return 1;
+                        if (a.price > b.price)
+                        return -1;
+                        return 0;
+                    }
+                    return lessonsArray.sort(compare);
+                }
+            
+            },
+        });
+    </script>
+
+<!------------------------------------------------------------------------------------------------------------------->
+<style>
+    
+
+    </style>
+</html>
