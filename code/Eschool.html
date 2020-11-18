@@ -31,16 +31,13 @@
                 <h5>Sorting</h5>
             </div>
             <div class="col-sm-5">
-            
             </div>
-    
             <div class="col-sm-2">
                 <button @click='showCheckout'> 
                     {{cartItemCount}}
                 <span class ="fa fa-cart-plus"></span> Checkout </button>
             </div>
         </div>
-    
         <div class="row">
             <div class="col-sm-4">
                 <p>
@@ -51,7 +48,8 @@
             </div>
             <div class="col-sm-8">
                 <div v-if='showLesson'>
-                    <div class="content">   <h5>Choose your lessons </h5>
+                    <div class="content">   
+                        <h5>Choose your lessons </h5>
                             <!--Using the for loop we are looping through the return of the sortedProducts computed property-->
                             <!--This will give us a list sorted by Price-->
                             <div v-for="lesson in lessons">
